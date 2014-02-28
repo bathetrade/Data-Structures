@@ -34,15 +34,33 @@ struct node {
 	}
 };
 
+/*
+Pseudo-algorithm:
+pass the "next" pointer all the way down to the smallest element (leftmost node)
+set the next pointer equal to the current node
+
+*/
+
 template <typename T>
 class BinaryTree {
 private:
 	node<T>* root;
+	node<T>*& CreateBackbone(node<T>*& fromPrev, node<T>* cur) {
+		if (cur->left)
+			CreateBackbone(fromPrev, cur->left);
+		fromPrev = cur;
+		if (cur->right)
+			CreateBackbone(
+		
 public:
 	BinaryTree() : root{ nullptr } {}
 	BinaryTree(const BinaryTree<T>&) = delete;    //Disallow copying for now
 	BinaryTree(BinaryTree&& b) : root{nullptr} {} //Trivial move constructor; makes no sense to use this.
 	~BinaryTree() { clear(); }
+	
+	void balance() {
+		
+	}
 	
 	void clear() {
 		if (empty())
