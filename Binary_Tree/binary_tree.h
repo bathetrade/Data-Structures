@@ -34,32 +34,77 @@ struct node {
 	}
 };
 
+/*
+Pseudo-algorithm:
+pass the "next" pointer all the way down to the smallest element (leftmost node)
+set the next pointer equal to the current node
+
+*/
+
 template <typename T>
 class BinaryTree {
 private:
 	node<T>* root;
+	void CreateInorderQueue(std::queue<node<T>*>& q, node<T>* cur) {
+		if (cur != nullptr) {
+			CreateInorderQueue(q, cur->left);
+			q.push(cur);
+			CreateInorderQueue(q, cur->right);
+		}
+	}
+	
+	void TransformToBackbone() {
+		
+		if (empty())
+			return;
+
+		//Get "sorted" queue from tree; makes it easier to create backbone. Not the most efficient way of doing this, since the tree is traversed twice.
+		std::queue<node<T>*> q;
+		CreateInorderQueue(q, root);
+		
+		//Initialize new root
+		root = q.front();
+		q.pop();
+		root->left = nullptr;
+
+		//Create the backbone
+		node<T>* temp = root;
+		while (!q.empty()) {
+			temp->right = q.front();
+			q.pop();
+			temp        = temp->right;
+			temp->left  = nullptr;
+		}
+		
+		
+	}
+
 public:
 	BinaryTree() : root{ nullptr } {}
 	BinaryTree(const BinaryTree<T>&) = delete;    //Disallow copying for now
 	BinaryTree(BinaryTree&& b) : root{nullptr} {} //Trivial move constructor; makes no sense to use this.
 	~BinaryTree() { clear(); }
 	
+	void balance() {
+		if (empty())
+			return;
+		TransformToBackbone();
+
+		//Add code here to actually balance the backbone
+	}
+	
 	void clear() {
 		if (empty())
 			return;
 	
 		std::queue<node<T>*> q;
-		node<T>* temp{};
-		q.push(root);
+		CreateInorderQueue(q, root);
 		while (!q.empty()) {
-			temp = q.front();
+			delete q.front();
 			q.pop();
-			if (temp->left != nullptr)
-				q.push(temp->left);
-			if (temp->right != nullptr)
-				q.push(temp->right);
-			delete temp;
 		}
+		
+		root = nullptr;
 	}
 	
 	bool empty() const { return root==nullptr; }
@@ -111,7 +156,7 @@ public:
 		
 		//Find a leaf node
 		node<T>* temp = root;
-		node<T>* prev;
+		node<T>* prev{};
 		while (temp) {
 			prev = temp;
 			if (el < temp->data)
