@@ -54,14 +54,14 @@ private:
 	}
 	
 	void TransformToBackbone() {
-		
+
 		if (empty())
 			return;
 
 		//Get "sorted" queue from tree; makes it easier to create backbone. Not the most efficient way of doing this, since the tree is traversed twice.
 		std::queue<node<T>*> q;
 		CreateInorderQueue(q, root);
-		
+
 		//Initialize new root
 		root = q.front();
 		q.pop();
@@ -72,12 +72,23 @@ private:
 		while (!q.empty()) {
 			temp->right = q.front();
 			q.pop();
-			temp        = temp->right;
-			temp->left  = nullptr;
+			temp = temp->right;
+			temp->left = nullptr;
 		}
-		
-		
 	}
+
+	bool RotateRight(node<T>*& parent, node<T>* child) {  //Rotates parent's left subtree "up"
+		if (parent == nullptr || child == nullptr)
+			return false;
+		if (child != parent->left)						//This algorithm only works if child is a left subtree
+			return false;
+
+		parent->left = child->right;
+		child->right = parent;
+		parent = child;
+		return true;
+	}
+
 
 public:
 	BinaryTree() : root{ nullptr } {}
@@ -89,7 +100,6 @@ public:
 		if (empty())
 			return;
 		TransformToBackbone();
-
 		//Add code here to actually balance the backbone
 	}
 	
