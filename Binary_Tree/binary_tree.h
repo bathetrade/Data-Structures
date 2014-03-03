@@ -53,13 +53,32 @@ private:
 		if (empty())
 			return;
 		
-		//First, transform root's left subtree into a backbone.
-		node<T>* remainder = root->right;
+		//First, eliminate the tree's left subtree.
 		while (root->left != nullptr) {
 			RotateRight(root, root->left);
 		}
 		
 		//Then, transform the remainder of the tree into a backbone.
+		node<T>* temp = root;
+		while (temp->right != nullptr) {				//Iterate over the backbone
+			node<T>* nextNodeLeftSubtree = temp->right->left;
+			while (nextNodeLeftSubtree != nullptr) {		//Transform any "left-over" subtrees
+				RotateRight(temp->right, nextNodeLeftSubtree);
+				nextNodeLeftSubtree = temp->right->left;
+			}
+			temp = temp->right;
+		}
+	
+		//Test
+		//After test: works beautifully.
+		temp = root;
+		for (int i=0; temp != nullptr; ++i) {
+			std::cout << "Node: " << i << std::endl;
+			std::cout << "Data: " << temp->data << std::endl;
+			std::cout << "Left pointer: " << temp->left << std::endl;
+			std::cout << "Right pointer: " << temp->right << std::endl << std::endl;
+			temp = temp->right;
+		}
 	}
 	
 	void TransformToBackbone() {
@@ -120,7 +139,7 @@ public:
 	void balance() {
 		if (empty())
 			return;
-		TransformToBackbone();
+		EfficientTransformToBackbone();
 		//Add code here to actually balance the backbone
 	}
 	
