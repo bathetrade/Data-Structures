@@ -3,7 +3,6 @@
 
 #include <queue>
 
-//Testing...does this cause a merge conflict?
 template <typename T>
 struct node {
 	T data;
@@ -35,13 +34,6 @@ struct node {
 	}
 };
 
-/*
-Pseudo-algorithm:
-pass the "next" pointer all the way down to the smallest element (leftmost node)
-set the next pointer equal to the current node
-
-*/
-
 template <typename T>
 class BinaryTree {
 private:
@@ -54,12 +46,29 @@ private:
 		}
 	}
 	
+	
+	//This method is incomplete.
+	void EfficientTransformToBackbone() {
+		
+		if (empty())
+			return;
+		
+		//First, transform root's left subtree into a backbone.
+		node<T>* remainder = root->right;
+		while (root->left != nullptr) {
+			RotateRight(root, root->left);
+		}
+		
+		//Then, transform the remainder of the tree into a backbone.
+	}
+	
 	void TransformToBackbone() {
 
 		if (empty())
 			return;
 
-		//Get "sorted" queue from tree; makes it easier to create backbone. Not the most efficient way of doing this, since the tree is traversed twice.
+		//Get "sorted" queue from tree; makes it easier to create backbone.
+		//Inefficient in both time and space, but easy to understand.
 		std::queue<node<T>*> q;
 		CreateInorderQueue(q, root);
 
@@ -81,7 +90,7 @@ private:
 	bool RotateRight(node<T>*& parent, node<T>* child) {  //Rotates parent's left subtree "up"
 		if (parent == nullptr || child == nullptr)
 			return false;
-		if (child != parent->left)						//This algorithm only works if child is a left subtree
+		if (child != parent->left)		//This algorithm only works if child is a left subtree
 			return false;
 
 		parent->left = child->right;
@@ -90,6 +99,17 @@ private:
 		return true;
 	}
 
+	bool RotateLeft(node<T>*& parent, node<T>* child) {
+		if (parent == nullptr || child == nullptr)
+			return false;
+		if (child != parent->right)		//Only works if child is parent's right subtree
+			return false;
+		
+		parent->right = child->left;
+		child->left   = parent;
+		parent        = child;
+		return true;
+	}
 
 public:
 	BinaryTree() : root{ nullptr } {}
