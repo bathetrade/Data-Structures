@@ -2,6 +2,7 @@
 #define BINARY_TREE_H
 
 #include <queue>
+#include <cmath>  //log2()
 
 template <typename T>
 struct node {
@@ -46,13 +47,52 @@ private:
 		}
 	}
 	
-	
-	//This method is incomplete.
-	void EfficientTransformToBackbone() {
+	void BalanceDSW() {
+		size_t nodes = EfficientTransformToBackbone();
+		if (nodes < 3)
+			return;
+
+		//Find the number of nodes m in the "closest" (such that m < nodes) perfectly balanced binary tree
+		size_t m = pow(2, static_cast<size_t>(log2(nodes + 1))) - 1;
+		size_t numPrerotations = nodes - m;
+		
+		//Create a fake root that is one higher than the actual root.
+		//This is to prevent us from having to handle the root separately.
+		//Also, it allows us to set the new root when we're done balancing.
+		node<T> fake;
+		node<T>* fakeRoot = &fake;
+		fakeRoot->right = root;
+		node<T>* tempGr = fakeRoot;
+		node<T>* tempCh;
+
+		//Do "pre-rotations" in order to decrease the the height of the backbone to m. This is somewhat of an edge case to deal with "extra nodes" (relative to m).
+		//Also, this ensures that the last level of the tree has its leaves as far to the left as possible.
+		for (int i = 0; i < numPrerotations; ++i) {
+			tempCh = tempGr->right->right;
+			RotateLeft(tempGr->right, tempCh);
+			tempGr = tempGr->right;
+		}
+
+		//Do the actual balancing.
+		while (m > 1) {
+			m /= 2;
+			tempGr = fakeRoot;
+			for (int i = 0; i < m; ++i) {
+				tempCh = tempGr->right->right;
+				RotateLeft(tempGr->right, tempCh);
+				tempGr = tempGr->right;
+			}
+		}
+
+		root = fakeRoot->right;
+	}
+
+	size_t EfficientTransformToBackbone() {
 		
 		if (empty())
-			return;
+			return 0;
 		
+		size_t numNodes = 1;
 		//First, eliminate the tree's left subtree.
 		while (root->left != nullptr) {
 			RotateRight(root, root->left);
@@ -66,19 +106,12 @@ private:
 				RotateRight(temp->right, nextNodeLeftSubtree);
 				nextNodeLeftSubtree = temp->right->left;
 			}
+
+			++numNodes;
 			temp = temp->right;
 		}
-	
-		//Test
-		//After test: works beautifully.
-		temp = root;
-		for (int i=0; temp != nullptr; ++i) {
-			std::cout << "Node: " << i << std::endl;
-			std::cout << "Data: " << temp->data << std::endl;
-			std::cout << "Left pointer: " << temp->left << std::endl;
-			std::cout << "Right pointer: " << temp->right << std::endl << std::endl;
-			temp = temp->right;
-		}
+
+		return numNodes;
 	}
 	
 	void TransformToBackbone() {
@@ -87,7 +120,7 @@ private:
 			return;
 
 		//Get "sorted" queue from tree; makes it easier to create backbone.
-		//Inefficient in both time and space, but easy to understand.
+		//Inefficient in space, but easy to understand.
 		std::queue<node<T>*> q;
 		CreateInorderQueue(q, root);
 
@@ -139,8 +172,7 @@ public:
 	void balance() {
 		if (empty())
 			return;
-		EfficientTransformToBackbone();
-		//Add code here to actually balance the backbone
+		BalanceDSW();
 	}
 	
 	void clear() {
